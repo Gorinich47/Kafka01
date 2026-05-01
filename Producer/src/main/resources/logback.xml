@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+<!--    куда мыхотим записывать логи-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+<!--        определяем как форматировать наш лог-->
+        <encoder>
+<!--            %d{HH:mm:ss:SSS} - время-->
+<!--            [%thread] - имя потока-->
+<!--            %-5level - уровень логирования-->
+<!--            %logger{36} - имя логера-->
+<!--            %msg - сообщение-->
+            <pattern>%d{HH:mm:ss:SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+<!--    уровни логирования:-->
+<!--        - ERROR критичные ошибки-->
+<!--        - WARN предупреждения, можно игнорировать-->
+<!--        - INFO информационные сообщения-->
+<!--        - DEBUG отладочная информация-->
+<!--        - TRACE максимально детальная трассировка-->
+    <root level="info">
+<!--        привязываем наш логер к STDOUT-->
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
