@@ -54,6 +54,10 @@ public class KafkaConfig {
         // Установили класса сирилизации значений
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,StringSerializer.class.getName());
 
+        /*
+         * Разные настройки можно посмотреть тут:
+         */
+
         return properties;
     }
 }

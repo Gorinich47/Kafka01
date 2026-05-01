@@ -29,13 +29,6 @@ public class KafraProducer01 {
                 // Выполняется асинхронная отправка сообщения без обработки ответа
                 producer.send(producerRec);
 
-                producer.send(producerRec, new Callback(){
-                    @Override
-                    public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-                        // обработчик ответов от сервера
-                    }
-                });
-
                 // запишем в лог отправку сообщения
                 logger.info("Отправлено: key={}, value={}",i, "val-msg "+i);
             }
