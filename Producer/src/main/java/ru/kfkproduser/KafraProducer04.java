@@ -1,22 +1,19 @@
-package ru.kfk;
+package ru.kfk.kfk;
 
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.kfk.config.KafkaConfig;
+import ru.kfk.kfk.config.KafkaConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
-
-import java.util.concurrent.Future;
 
 
 /**
- * Поставщик данных
+ * Поставщик данных, асинхронный вызов Callback.
+ *
  */
-public class KafraProducer02 {
+public class KafraProducer04 {
     // создание логера для класса
-    private static final Logger logger = LoggerFactory.getLogger(KafraProducer02.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafraProducer04.class);
     private static final int MAX_MSG = 200;
     public static void main(String[] args) {
         try (KafkaProducer<String, String> producer = new KafkaProducer<>(KafkaConfig.getProducerConfig())){
@@ -36,21 +33,30 @@ public class KafraProducer02 {
                 //2. offset - номер позиции в партиции
                 //3. timestamp - временная метка
 
-                Future<RecordMetadata> result = producer.send(producerRec);
-                RecordMetadata md =result.get();
-                // запишем в лог отправку сообщения
-                logger.info("Отправлено: key={}, value={} metadata (topic={}, partition={}, offset={}, timestamp={})",
-                        producerRec.key(),
-                        producerRec.value(),
-                        md.topic(),
-                        md.partition(),
-                        md.offset(),
-                        md.timestamp()
-                );
+                producer.send(producerRec, (md, ex) ->{
+                    if(ex != null){
+                        logger.warn("Отправлено: key={}, value={}",
+                                producerRec.key(),
+                                producerRec.value(),
+                                ex.getMessage());
+                    } else {
+                        // запишем в лог отправку сообщения
+                        logger.info("Отправлено: key={}, value={} metadata (topic={}, partition={}, offset={}, timestamp={})",
+                                producerRec.key(),
+                                producerRec.value(),
+                                md.topic(),
+                                md.partition(),
+                                md.offset(),
+                                md.timestamp()
+                        );
+                    }
+                });
+
             }
             logger.info("Все данные успешно переданы");
         } catch(Exception e) {
             logger.error("Ошибка при отправке сообщений в кафку",e);
+            Thread.currentThread().interrupt(); // разрываем соединение
         }
     }
 }
