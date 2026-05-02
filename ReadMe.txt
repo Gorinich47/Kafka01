@@ -1,4 +1,4 @@
-Методы отправки сообщений:
+--------Методы отправки сообщений------------
 
 1. Отправил и забыл
 try(KafkaProducer<String, String> producer = new KafkaProducer<>(KafkaConfig.getProducerConfig())){
@@ -60,3 +60,65 @@ try(AdminClient adminC = AdminClient.create(properties)){
 
 }
 
+-------------Методы получения------------
+
+ // Подписались на топик из конфиг файла
+consumer.subscribe(Collections.singletonList(KafkaConfig.TOPIC_NAME));
+while (true){
+    // Опрашиваем Кафку о наличии новых сообщений
+    ConsumerRecords<String, String> consumerRecords = consumer.poll(DURATION_10_MILLISECONDS);
+    // Итерации по всем полученным сообщениям в текущем пакете
+    for (var record :  consumerRecords ) {
+        logger.info("topic={}, partition={}, offset={}, key={} value={}",
+                record.topic(),
+                record.partition(),
+                record.offset(),
+                record.key(),
+                record.value()
+        );
+    }
+}
+
+-------------Admin API--------------
+1. Создание нового топика
+admin.createTopics(Collection.singletonList(new Topic("Имя_топика", 3, (short) 1)));
+2. Удаление топика
+admin.deleteTopics(Collection.singletonList("Имя_топика"));
+3. Получение информации о партициях
+DescribeTopicsResult res = admin.describeTopics(Collection.singletonList("Имя_топика"));
+
+--- ACL и квоты
+ACL (Access Control Lists) - механизм обеспечивающий безопасность на уровне топиков.
+Это механизм авторизации, который определяет кто и что может делать в кластере.
+
+Пример - запрещаем доступ если не админ
+super.user = User:admin;User:kafka  --предоставляет доступ только для админов
+authorize.class.name=kafka.security.authorizer.AclAuthorizer --доступ закрыт для всех без ACL
+
+--- Проблема дублирования сообщений
+Future<RecordMetadata> future = producer.send(record);
+
+Решение №1 - используем идемпотентный Producer
+Идемпотентность - это свойство операций, при котором многократное повторение даёт одинаковый результат.
+Properties props = new Properties();
+props.put("bootstrap.servers", "localhost":9092);
+props.put("enable.idempotence", true); --главная настройка
+props.put("acks", "all"); --обязательно all
+
+KafkaProducer<?,?> producer = new KafkaProducer<>(props);
+
+Решение №2 - использование транзакций
+Транзакция означает, что все операции внутри одной транзакции будут применены сразу все (атомарность), либо ни одна не выполняется.
+
+Как работать с транзакциями:
+--Этап инициализации
+1. Продюсеру назначается transactional.id
+2. При первом запуске продюсер регистрируется у Транзакционного координатора.
+Координатор записывает сопоставление transactional.id и идентификатора продюсера(PID) в специальный топик  __transaction_state
+3. Это позволяет координировать работу одного и того же продюсера при перезапусках.
+--Начало транзакции
+1. Продюсер вызывает метод: producer.initTransactions()
+2. Для каждой новой транзакции producer.beginTransactions()
+3. В транзакции выполняем действия и отправляем сообщения в топик
+4. Если сохраняем результат - producer.commitTransactions()
+5. Если хотим откатить транзакцию - producer.abortTransactions()

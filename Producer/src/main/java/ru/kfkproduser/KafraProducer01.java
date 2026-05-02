@@ -1,9 +1,9 @@
-package ru.kfk.kfk;
+package ru.kfkproduser;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.kfk.kfk.config.KafkaConfig;
+import ru.kfkproduser.config.KafkaConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
 

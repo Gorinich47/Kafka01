@@ -14,11 +14,10 @@ services:
     ports:
       - "2181:2181"
 
-  kafka:
+  kafka1:
     image: confluentinc/cp-kafka:7.6.1
-    container_name: kafka
-    depends_on:
-      - zookeeper
+    container_name: kafka1
+    depends_on: zookeeper
     ports:
       - "9092:9092"
       - "9093:9093"
