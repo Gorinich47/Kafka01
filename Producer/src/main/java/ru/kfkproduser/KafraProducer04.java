@@ -16,6 +16,8 @@ public class KafraProducer04 {
     private static final Logger logger = LoggerFactory.getLogger(KafraProducer04.class);
     private static final int MAX_MSG = 200;
     public static void main(String[] args) {
+        // Создаём экземпляр KafkaProducer с указанной конфигурацией
+        // Параметры <String, String> означают, что ключ и значение будут являться строками
         try (KafkaProducer<String, String> producer = new KafkaProducer<>(KafkaConfig.getProducerConfig())){
             for (int i=0; i<MAX_MSG; i++) {
                 // Каждое сообщение класса это ProducerRecord

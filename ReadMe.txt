@@ -122,3 +122,44 @@ KafkaProducer<?,?> producer = new KafkaProducer<>(props);
 3. В транзакции выполняем действия и отправляем сообщения в топик
 4. Если сохраняем результат - producer.commitTransactions()
 5. Если хотим откатить транзакцию - producer.abortTransactions()
+
+
+------ Kafka Streams -------
+Kafka Stream - это библиотека для построения приложений потоковой обработки данных.
+
+Пример - детектор на сомнительные транзакции со счетами
+KStream<String, Transaction> transactions = builder.stream("transaction");
+KStream<String, Alert> alerts = transactions.filter((user, transaction)-> transaction>100_000)
+    .mapValues(transaction -> new Alert("Сомнительная операция"));
+alerts.to("...")
+
+Основные классы:
+StreamBuilder - конструктор потоков
+KStream - представление потока сообщений
+KTable - таблица, поддерживающая изменение значений
+State Store - используется для хранения промежуточных результатов обработки
+
+Пример работы на Java:
+KStream<String, Order> orders = builder.stream("orders");
+GlobalKTable<String, Client> clients = builder.globalTable("clients");
+GlobalKTable<String, Items> items = builder.globalTable("items");
+KStream<String, ?> date = orders
+    .join(Clients, (orderKey, order)->order.getClientId()) --выполняем любые операции с клиентом на основе его ID
+    .join(items, (key, order)->order.getItemId())
+
+date.to("...")
+
+------ Schema Registry -------
+Schema Registry - это стандарт для всех сообщений в Kafka
+
+class Person{
+    String fio;
+    int age;
+}
+
+class Person{
+    String fio;
+    int age;
+    int salary;
+}
+

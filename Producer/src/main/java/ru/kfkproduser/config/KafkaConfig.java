@@ -58,6 +58,21 @@ public class KafkaConfig {
          * Разные настройки можно посмотреть тут:
          */
 
+        // Критические настройки для транзакций
+
+        // Включаем идемпотентность - гарантирует, что все сообщения не будут дублироваться
+        // при повторных отправках. ОБЯЗАТЕЛЬНОЕ условие для работы транзакций!
+        properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_DOC, "true");
+        //properties.put("enable.idempotence", "true");
+
+        // Уникальный ID для идентификации транзакционного продюсера
+        // !!! ВАЖНО:
+        // - должен быть уникальным для каждого логического продюсера,
+        // - позволяет kafka отслеживать состояние транзакций при перезапусках
+        // - один transactional.id должен использоваться только одним экземпляром продюзра в момент времени
+        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG,"my-transaction-id");
+        //properties.put("transactional.id","my-transaction-id");
+
         return properties;
     }
 }
